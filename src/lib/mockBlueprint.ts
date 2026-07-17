@@ -133,7 +133,7 @@ export function generateMockBlueprint(idea: string): Blueprint {
       { resource: 'Vercel (Hobby)', monthlyCost: '$0', notes: '100GB bandwidth, serverless functions included' },
       { resource: 'Custom Domain', monthlyCost: '$10-15', notes: 'Annual domain registration cost' },
       { resource: 'Supabase Pro', monthlyCost: '$25', notes: '8GB database, 100GB storage, daily backups (when scaling)' },
-      { resource: 'OpenAI API', monthlyCost: '$10-50', notes: 'Depends on AI feature usage volume' },
+      { resource: 'Email Service', monthlyCost: '$0-20', notes: 'Transaction emails (Resend/Postmark free tier covers most apps)' },
     ],
     futureEnhancements: [
       { feature: 'Real-time collaboration', priority: 'Medium', description: 'Multi-user editing with live cursors and presence indicators' },

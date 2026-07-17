@@ -42,19 +42,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const openaiKey = Deno.env.get("OPENAI_API_KEY");
-    let blueprint;
-
-    if (openaiKey) {
-      try {
-        blueprint = await generateWithOpenAI(idea, openaiKey);
-      } catch (e) {
-        console.error("OpenAI fallback:", e);
-        blueprint = generateBlueprintLocally(idea);
-      }
-    } else {
-      blueprint = generateBlueprintLocally(idea);
-    }
+    const blueprint = generateBlueprintLocally(idea);
 
     const { data: project, error: dbError } = await supabase
       .from("projects")
@@ -92,44 +80,6 @@ Deno.serve(async (req: Request) => {
     });
   }
 });
-
-async function generateWithOpenAI(idea: string, apiKey: string) {
-  const systemPrompt = `You are an expert AI Software Architect. Generate a comprehensive project blueprint in JSON format for the given project idea. The response must be valid JSON with this exact structure:
-{
-  "projectOverview": { "name": string, "tagline": string, "description": string, "targetAudience": string, "tags": string[] },
-  "techStack": [{ "category": string, "technology": string, "reason": string }],
-  "architecture": { "description": string, "components": [{ "name": string, "responsibility": string, "connections": string[] }], "dataFlow": string },
-  "databaseSchema": [{ "table": string, "columns": [{ "name": string, "type": string, "constraints": string }], "relationships": string }],
-  "apiEndpoints": [{ "method": string, "path": string, "description": string, "requestBody": string, "responseBody": string }],
-  "folderStructure": [{ "path": string, "description": string }],
-  "developmentRoadmap": [{ "phase": string, "duration": string, "goals": string[], "deliverables": string[] }],
-  "uiPages": [{ "name": string, "purpose": string, "components": string[], "wireframe": string }],
-  "sprintPlan": [{ "sprint": string, "duration": string, "tasks": string[], "goal": string }],
-  "readme": string,
-  "deploymentGuide": [{ "step": string, "platform": string, "instructions": string, "commands": string[] }],
-  "testingStrategy": { "unit": string, "integration": string, "e2e": string, "performance": string, "tools": string[] },
-  "costEstimation": [{ "resource": string, "monthlyCost": string, "notes": string }],
-  "futureEnhancements": [{ "feature": string, "priority": string, "description": string }]
-}`;
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: `Generate a complete project blueprint for: ${idea}` },
-      ],
-      temperature: 0.7,
-      response_format: { type: "json_object" },
-    }),
-  });
-
-  if (!response.ok) throw new Error(`OpenAI error: ${response.status}`);
-  const data = await response.json();
-  return JSON.parse(data.choices[0].message.content);
-}
 
 function generateBlueprintLocally(idea: string) {
   const cleanIdea = idea.trim();
@@ -264,7 +214,6 @@ function generateBlueprintLocally(idea: string) {
       { resource: "Vercel (Hobby)", monthlyCost: "$0", notes: "100GB bandwidth, serverless functions included" },
       { resource: "Custom Domain", monthlyCost: "$10-15", notes: "Annual domain registration cost" },
       { resource: "Supabase Pro", monthlyCost: "$25", notes: "8GB database, 100GB storage, daily backups (when scaling)" },
-      { resource: "OpenAI API", monthlyCost: "$10-50", notes: "Depends on AI feature usage volume" },
     ],
     futureEnhancements: [
       { feature: "Real-time collaboration", priority: "Medium", description: "Multi-user editing with live cursors and presence indicators" },
